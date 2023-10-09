@@ -49,7 +49,7 @@ async def websocket_a(websocket: WebSocket):
 				"email": email
 			}
 		}
-		await websocket.send(res)
+		await websocket.send_json(res)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0")

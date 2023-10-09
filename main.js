@@ -1,32 +1,4 @@
 let xls_files = [];
-let socket = new WebSocket("ws://localhost:8000/");
-
-socket.onopen = function(e) {
-  console.log("[open] Connection established");
-  console.log("Sending to server");
-};
-
-socket.onmessage = function(event) {
-  let data = JSON.parse(event.data);
-  if (data['type'] == "apify") {
-
-  }
-  console.log(`[message] Data received from server: ${event.data}`);
-};
-
-socket.onclose = function(event) {
-  if (event.wasClean) {
-    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-  } else {
-    // e.g. server process killed or network down
-    // event.code is usually 1006 in this case
-    console.log('[close] Connection died');
-  }
-};
-
-socket.onerror = function(error) {
-  console.log(`[error]`);
-};
 
 document.addEventListener("click", function(e){
   let target = e.target.closest(".list-group-item > span");
@@ -99,11 +71,11 @@ $("#start").click(function () {
         $(".list-group li:nth-child("+(i+1)+")").append(loading);
   
         if(json.length != 0){
-          let socket = new WebSocket("ws://localhost:8000/");
+          let socket = new WebSocket("wss://business-email-scrap.onrender.com/");
           socket.onopen = function(e) {
             console.log("[open] Connection established");
             console.log("Sending to server");
-            // socket.send(JSON.stringify(json.map(row => row[4])));
+            socket.send(JSON.stringify(json.map(row => row[4])));
           };
           socket.onmessage = function(event) {
             let data = JSON.parse(event.data);
@@ -120,6 +92,7 @@ $("#start").click(function () {
                 const worksheet = XLSX.utils.json_to_sheet(json);
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'Tabelle1');
                 XLSX.writeFile(workbook, xls_file.name+'_result.xlsx');
+                $(this).prop('disabled', false);
               } else {
                 let percentage = (current / total) * 100;
                 $(".list-group li:nth-child("+(i+1)+") .spinner-text").text(percentage.toFixed(2) + "%");
@@ -134,6 +107,5 @@ $("#start").click(function () {
     };
     reader.readAsArrayBuffer(xls_file);
   }
-  this.prop('disabled', false);
 })
 
