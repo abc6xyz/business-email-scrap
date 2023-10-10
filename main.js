@@ -69,7 +69,6 @@ $("#start").click(function () {
         $(".list-group li:nth-child("+(i+1)+") span").remove();
         let loading = '<div class="loading"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="spinner-text"></span></div>';
         $(".list-group li:nth-child("+(i+1)+")").append(loading);
-  
         if(json.length != 0){
           let socket = new WebSocket("wss://business-email-scrap.onrender.com/");
           socket.onopen = function(e) {
@@ -85,13 +84,15 @@ $("#start").click(function () {
             if (data['type'] == "requests") {
               let current = data["ref"]["status"][0];
               let total = data["ref"]["status"][1];
-              json[current].append(data["ref"]["email"]);
+              json[current].push(data["ref"]["email"]);
               if (current+1 == total) {
                 socket.close();
                 const workbook = XLSX.utils.book_new();
                 const worksheet = XLSX.utils.json_to_sheet(json);
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'Tabelle1');
                 XLSX.writeFile(workbook, xls_file.name+'_result.xlsx');
+                $(".list-group li:nth-child("+(i+1)+") .spinner-border").remove();
+                $(".list-group li:nth-child("+(i+1)+") div").text(xls_file.name+'_result.xlsx');
                 $(this).prop('disabled', false);
               } else {
                 let percentage = (current / total) * 100;
@@ -103,6 +104,7 @@ $("#start").click(function () {
         }
       } catch (error) {
         $(".list-group li:nth-child("+(i+1)+") div").text("not readable");
+        $(this).prop('disabled', false);
       }
     };
     reader.readAsArrayBuffer(xls_file);
